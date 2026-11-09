@@ -1,46 +1,23 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createSession, deleteSession } from "@/lib/session";
+import { postToBackend } from "@/lib/backend";
+import { createSession, deleteSession, getSession } from "@/lib/session";
+import {
+  isBackendAuthResponse,
+  toClientSession,
+  type ClientSession,
+} from "@/src/types/auth";
 
 export type LoginState = {
   error?: string;
   email?: string;
+  // Presente solo si el login fue exitoso. Lleva el access token al cliente
+  // para guardarlo en memoria; el refresh token queda en la cookie httpOnly.
+  session?: ClientSession;
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Llama a la API de autenticación. Devuelve el token si las credenciales son
-// válidas, o null si la API responde 401/403.
-async function authenticate(email: string, password: string) {
-  const apiUrl = process.env.API_URL;
-  if (!apiUrl) {
-    throw new Error("Falta la variable de entorno API_URL.");
-  }
-
-  const res = await fetch(new URL("auth/login", apiUrl.replace(/\/?$/, "/")), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-    cache: "no-store",
-  });
-
-  if (res.status === 401 || res.status === 403) {
-    return null;
-  }
-  if (!res.ok) {
-    throw new Error(`auth/login respondió ${res.status}`);
-  }
-
-  // Ajustar al formato de respuesta real de la API.
-  const data = await res.json();
-  const token: string | undefined =
-    data.token ?? data.accessToken ?? data.access_token;
-  if (!token) {
-    throw new Error("La respuesta de auth/login no incluye un token.");
-  }
-  return token;
-}
 
 export async function login(
   _prevState: LoginState,
@@ -56,22 +33,37 @@ export async function login(
     return { error: "Ingresa un correo válido.", email };
   }
 
-  let token: string | null;
+  let res: Response;
   try {
-    token = await authenticate(email, password);
+    res = await postToBackend("auth/login", { email, password });
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
     return { error: "No se pudo iniciar sesión. Intenta más tarde.", email };
   }
-  if (!token) {
+
+  if (res.status === 401 || res.status === 403) {
     return { error: "Correo o contraseña incorrectos.", email };
   }
 
-  await createSession(token);
-  redirect("/");
+  const data: unknown = res.ok ? await res.json().catch(() => null) : null;
+  if (!isBackendAuthResponse(data)) {
+    console.error(`auth/login respondió ${res.status} con un cuerpo inesperado.`);
+    return { error: "No se pudo iniciar sesión. Intenta más tarde.", email };
+  }
+
+  await createSession(data.refreshToken);
+  return { session: toClientSession(data) };
 }
 
 export async function logout() {
+  const refreshToken = await getSession();
+  if (refreshToken) {
+    // Revoca el refresh token en el backend. Si falla, igual se cierra la
+    // sesión local: el token expira solo y el logout del backend es idempotente.
+    await postToBackend("auth/logout", { refreshToken }).catch((error) => {
+      console.error("Error al revocar la sesión:", error);
+    });
+  }
   await deleteSession();
   redirect("/login");
 }
