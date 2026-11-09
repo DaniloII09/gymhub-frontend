@@ -1,12 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { login, type LoginState } from "@/app/actions/auth";
+import { useAuthStore } from "@/src/stores/useAuthStore";
 
 const initialState: LoginState = {};
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState);
+  const router = useRouter();
+
+  // Login exitoso: guarda la sesión en memoria y entra a la app.
+  useEffect(() => {
+    if (!state.session) return;
+    useAuthStore.getState().setSession(state.session);
+    router.replace("/");
+  }, [state.session, router]);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -46,7 +56,7 @@ export function LoginForm() {
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || Boolean(state.session)}
         className="rounded-md bg-foreground px-4 py-2 font-medium text-background transition-opacity disabled:opacity-60"
       >
         {pending ? "Ingresando..." : "Iniciar sesión"}
