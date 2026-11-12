@@ -15,7 +15,7 @@ export function LoginForm() {
   useEffect(() => {
     if (!state.session) return;
     useAuthStore.getState().setSession(state.session);
-    router.replace("/");
+    router.replace("/dashboard");
   }, [state.session, router]);
 
   return (
