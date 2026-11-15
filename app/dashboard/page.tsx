@@ -20,6 +20,12 @@ export default function DashboardPage() {
         >
           🛠️ Inventario de máquinas
         </Link>
+        <Link
+          href="/miembro/maquinas"
+          className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 transition-colors"
+        >
+          🏋️ Estado de las máquinas
+        </Link>
         <LogoutButton />
       </div>
     </div>
