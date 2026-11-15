@@ -14,6 +14,12 @@ export default function DashboardPage() {
         >
           📅 Calendario de Clases Grupales
         </Link>
+        <Link
+          href="/admin/maquinas"
+          className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 transition-colors"
+        >
+          🛠️ Inventario de máquinas
+        </Link>
         <LogoutButton />
       </div>
     </div>
