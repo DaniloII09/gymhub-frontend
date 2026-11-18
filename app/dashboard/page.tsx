@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogoutButton } from "../logout-button";
 import { SessionInfo } from "../session-info";
+import { RoleRedirect } from "./role-redirect";
 
 export default function DashboardPage() {
   return (
@@ -14,6 +15,7 @@ export default function DashboardPage() {
         >
           📅 Calendario de Clases Grupales
         </Link>
+        <RoleRedirect />
         <LogoutButton />
       </div>
     </div>
