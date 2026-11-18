@@ -3,10 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuthStatus, useAuthUser } from "@/src/stores/useAuthStore";
-import { fetchTrainers, fetchWeeklyClasses } from "@/src/services/classes/classes-service";
+import {
+  fetchTrainers,
+  fetchWeeklyClasses,
+} from "@/src/services/classes/classes-service";
 import type { GymClass, TrainerOption } from "@/src/types/classes";
 import { WeeklyCalendar } from "./weekly-calendar";
 import { ClassFormModal } from "./class-form-modal";
+import { CancelClassModal } from "./cancel-class-modal";
+import type { CancelClassResult } from "@/src/types/classes";
 
 function getMonday(d: Date): Date {
   const date = new Date(d);
@@ -21,13 +26,16 @@ export default function ClassesPage() {
   const status = useAuthStatus();
   const user = useAuthUser();
 
-  const [currentMonday, setCurrentMonday] = useState<Date>(() => getMonday(new Date()));
+  const [currentMonday, setCurrentMonday] = useState<Date>(() =>
+    getMonday(new Date()),
+  );
   const [classes, setClasses] = useState<GymClass[]>([]);
   const [trainers, setTrainers] = useState<TrainerOption[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [classToEdit, setClassToEdit] = useState<GymClass | null>(null);
+  const [classToCancel, setClassToCancel] = useState<GymClass | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -121,13 +129,24 @@ export default function ClassesPage() {
     }, 4500);
   };
 
+  const handleCancelSuccess = (result: CancelClassResult) => {
+    setClassToCancel(null);
+    setToastMessage(
+      `Clase cancelada: ${result.reservationsCancelled} reservas canceladas y ${result.noticesSent} avisos enviados.`,
+    );
+    setLoading(true);
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
   // 1. Estado cargando sesión
   if (status === "loading") {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-zinc-500 font-medium">Verificando permisos...</p>
+          <p className="text-sm text-zinc-500 font-medium">
+            Verificando permisos...
+          </p>
         </div>
       </div>
     );
@@ -145,7 +164,12 @@ export default function ClassesPage() {
             Acceso Restringido
           </h2>
           <p className="mt-2 text-sm text-red-700 dark:text-red-400">
-            Esta pantalla es exclusiva para usuarios con rol <strong className="font-semibold">ADMIN</strong>. Tu rol actual es <span className="font-semibold uppercase">{user?.role ?? "Invitado"}</span>.
+            Esta pantalla es exclusiva para usuarios con rol{" "}
+            <strong className="font-semibold">ADMIN</strong>. Tu rol actual es{" "}
+            <span className="font-semibold uppercase">
+              {user?.role ?? "Invitado"}
+            </span>
+            .
           </p>
           <div className="mt-6">
             <Link
@@ -166,7 +190,10 @@ export default function ClassesPage() {
       {/* Encabezado y migas de pan */}
       <div className="mb-6 flex items-center justify-between">
         <nav className="flex items-center gap-2 text-sm text-zinc-500">
-          <Link href="/" className="hover:text-zinc-800 dark:hover:text-zinc-200">
+          <Link
+            href="/"
+            className="hover:text-zinc-800 dark:hover:text-zinc-200"
+          >
             Inicio
           </Link>
           <span>/</span>
@@ -208,6 +235,7 @@ export default function ClassesPage() {
         onNextWeek={handleNextWeek}
         onCurrentWeek={handleCurrentWeek}
         onEditClass={handleEditClass}
+        onCancelClass={setClassToCancel}
         onNewClass={handleNewClass}
       />
 
@@ -220,6 +248,13 @@ export default function ClassesPage() {
           onSuccess={handleSaveSuccess}
           classToEdit={classToEdit}
           trainers={trainers}
+        />
+      )}
+      {classToCancel && (
+        <CancelClassModal
+          gymClass={classToCancel}
+          onClose={() => setClassToCancel(null)}
+          onSuccess={handleCancelSuccess}
         />
       )}
     </div>

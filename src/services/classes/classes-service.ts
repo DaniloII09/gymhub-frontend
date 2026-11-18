@@ -1,6 +1,7 @@
 import { apiFetch } from "@/src/services/http/api-client";
 import type {
   ClassServiceResult,
+  CancelClassResult,
   CreateClassInput,
   GymClass,
   TrainerOption,
@@ -9,7 +10,10 @@ import type {
 
 async function parseErrorMessage(res: Response): Promise<string> {
   try {
-    const data = (await res.json()) as { message?: string | string[]; error?: string };
+    const data = (await res.json()) as {
+      message?: string | string[];
+      error?: string;
+    };
     if (Array.isArray(data.message)) {
       return data.message.join(" ");
     }
@@ -23,6 +27,36 @@ async function parseErrorMessage(res: Response): Promise<string> {
     // Error al parsear JSON, usar fallback por status
   }
   return `Error en la solicitud (${res.status}).`;
+}
+
+export async function cancelClass(
+  classId: number,
+  reason: string,
+): Promise<ClassServiceResult<CancelClassResult>> {
+  try {
+    const res = await apiFetch(`classes/${classId}/cancel`, {
+      method: "PATCH",
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok)
+      return {
+        ok: false,
+        error: await parseErrorMessage(res),
+        status: res.status,
+      };
+    return {
+      ok: true,
+      data: (await res.json()) as CancelClassResult,
+      status: res.status,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error:
+        err instanceof Error ? err.message : "No se pudo cancelar la clase.",
+      status: 500,
+    };
+  }
 }
 
 /**
@@ -47,7 +81,8 @@ export async function fetchWeeklyClasses(
     const data = (await res.json()) as GymClass[];
     return { ok: true, data, status: res.status };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error al cargar las clases.";
+    const message =
+      err instanceof Error ? err.message : "Error al cargar las clases.";
     return { ok: false, error: message, status: 500 };
   }
 }
@@ -73,7 +108,8 @@ export async function createClass(
     const data = (await res.json()) as GymClass;
     return { ok: true, data, status: res.status };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error al conectar con el servidor.";
+    const message =
+      err instanceof Error ? err.message : "Error al conectar con el servidor.";
     return { ok: false, error: message, status: 500 };
   }
 }
@@ -100,7 +136,8 @@ export async function updateClass(
     const data = (await res.json()) as GymClass;
     return { ok: true, data, status: res.status };
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error al conectar con el servidor.";
+    const message =
+      err instanceof Error ? err.message : "Error al conectar con el servidor.";
     return { ok: false, error: message, status: 500 };
   }
 }
@@ -116,7 +153,13 @@ export async function fetchTrainers(): Promise<TrainerOption[]> {
     }
 
     const json = (await res.json()) as {
-      data?: Array<{ id: string; fullName: string; email: string; role: string; isActive?: boolean }>;
+      data?: Array<{
+        id: string;
+        fullName: string;
+        email: string;
+        role: string;
+        isActive?: boolean;
+      }>;
     };
 
     if (!json || !Array.isArray(json.data)) {
@@ -130,4 +173,3 @@ export async function fetchTrainers(): Promise<TrainerOption[]> {
     return [];
   }
 }
-
