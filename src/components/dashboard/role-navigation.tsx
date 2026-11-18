@@ -38,6 +38,12 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
   if (role === "MEMBER") {
     return (
       <>
+        <Link href="/miembro/clases" className={linkClass}>
+          📅 Clases grupales
+        </Link>
+        <Link href="/miembro/reservas" className={secondaryLinkClass}>
+          📋 Mis reservas
+        </Link>
         <Link href="/miembro/sesiones/agendar" className={linkClass}>
           💪 Agendar sesión personal
         </Link>
