@@ -328,6 +328,33 @@ export async function fetchMyReservations(): Promise<ClassServiceResult<ClassRes
   }
 }
 
+/** Cancela una reserva propia (H08 / FE-8.1); el backend obtiene al miembro del JWT. */
+export async function cancelMyReservation(
+  reservationId: number,
+): Promise<ClassServiceResult<ClassReservation>> {
+  try {
+    const res = await apiFetch(`classes/reservations/${reservationId}/cancel`, {
+      method: "PATCH",
+    });
+    if (!res.ok) {
+      const { message } = await readErrorPayload(res);
+      return { ok: false, error: message, status: res.status };
+    }
+    let payload: unknown;
+    try {
+      payload = await res.json();
+    } catch {
+      return { ok: false, error: UNEXPECTED_RESPONSE_MESSAGE, status: res.status };
+    }
+    if (!isValidReservationShape(payload)) {
+      return { ok: false, error: UNEXPECTED_RESPONSE_MESSAGE, status: res.status };
+    }
+    return { ok: true, data: payload, status: res.status };
+  } catch (err) {
+    return mapCaughtError(err, "No se pudo cancelar la reserva. Verifica tu conexión.");
+  }
+}
+
 /**
  * Programa una nueva clase grupal (H06 / SCRUM-74).
  * Si hay conflicto (HTTP 409) o error de validación (HTTP 400), devuelve el mensaje para el formulario.

@@ -63,6 +63,7 @@ export interface ClassReservation {
   classId: number;
   memberId: string;
   status: ReservationStatus;
+  origin?: "MEMBERSHIP" | "DROP_IN";
   cancelledAt: string | null;
   createdAt: string;
   gymClass: ReservationClassSummary;

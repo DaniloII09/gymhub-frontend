@@ -14,6 +14,7 @@ import {
   MemberClassesPanel,
 } from "./member-classes-view";
 import {
+  canCancelReservation,
   EMPTY_RESERVATIONS_MESSAGE,
   MyReservationsPanel,
 } from "./my-reservations-view";
@@ -418,5 +419,25 @@ describe("FE-7.2 · Mis reservas", () => {
     );
 
     expect(html).toContain(EMPTY_RESERVATIONS_MESSAGE);
+  });
+});
+
+describe("FE-8.1 · Cancelar mi reserva", () => {
+  const nowMs = new Date("2026-11-20T12:00:00.000Z").getTime();
+  const startAt = (offsetMs: number) => new Date(nowMs + offsetMs).toISOString();
+
+  it("permite exactamente 2 horas y bloquea 1h59, clase suelta y cancelada", () => {
+    const atBoundary = makeReservation({ gymClass: { ...makeReservation().gymClass, startsAt: startAt(2 * 60 * 60 * 1000) } });
+    expect(canCancelReservation(atBoundary, nowMs)).toBe(true);
+    expect(canCancelReservation({ ...atBoundary, gymClass: { ...atBoundary.gymClass, startsAt: startAt(119 * 60 * 1000) } }, nowMs)).toBe(false);
+    expect(canCancelReservation({ ...atBoundary, origin: "DROP_IN" }, nowMs)).toBe(false);
+    expect(canCancelReservation({ ...atBoundary, status: "CANCELLED" }, nowMs)).toBe(false);
+  });
+
+  it("muestra la acción solo para reservas confirmadas y exige confirmación", () => {
+    const upcoming = makeReservation({ gymClass: { ...makeReservation().gymClass, startsAt: startAt(3 * 60 * 60 * 1000) } });
+    const html = renderToStaticMarkup(<MyReservationsPanel reservations={[upcoming]} loading={false} error={null} sessionExpired={false} nowMs={nowMs} onRetry={noop} onCancel={async () => {}} />);
+    expect(html).toContain("Cancelar reserva");
+    expect(html).not.toContain("Confirmar cancelación");
   });
 });
