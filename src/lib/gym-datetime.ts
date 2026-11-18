@@ -1,6 +1,7 @@
 export const GYM_TIME_ZONE = "America/El_Salvador";
 export const MS_PER_DAY = 24 * 60 * 60 * 1000;
 export const TRAINER_SLOTS_RANGE_DAYS = 14;
+export const MEMBER_CLASSES_RANGE_DAYS = 7;
 
 const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: GYM_TIME_ZONE,
@@ -93,6 +94,13 @@ export function formatGymTimeRange(startsAt: string | Date, endsAt: string | Dat
 export function buildTrainerSlotsRange(now: Date = new Date()): { from: Date; to: Date } {
   const from = new Date(now.getTime());
   const to = new Date(from.getTime() + TRAINER_SLOTS_RANGE_DAYS * MS_PER_DAY);
+  return { from, to };
+}
+
+/** Rango exacto permitido para consultar el calendario de clases del miembro. */
+export function buildMemberClassesRange(now: Date = new Date()): { from: Date; to: Date } {
+  const from = new Date(now.getTime());
+  const to = new Date(from.getTime() + MEMBER_CLASSES_RANGE_DAYS * MS_PER_DAY);
   return { from, to };
 }
 
