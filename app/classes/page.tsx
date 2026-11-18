@@ -11,7 +11,7 @@ import type { GymClass, TrainerOption } from "@/src/types/classes";
 import { WeeklyCalendar } from "./weekly-calendar";
 import { ClassFormModal } from "./class-form-modal";
 import { CancelClassModal } from "./cancel-class-modal";
-import type { CancelClassResult } from "@/src/types/classes";
+import type { CancelClassResult } from "@/src/services/classes/cancel-class-service";
 
 function getMonday(d: Date): Date {
   const date = new Date(d);

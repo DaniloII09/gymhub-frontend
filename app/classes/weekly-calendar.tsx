@@ -3,9 +3,11 @@
 import { useMemo } from "react";
 import type { GymClass } from "@/src/types/classes";
 
+type ClassWithCancellation = GymClass & { cancellationReason?: string | null };
+
 interface WeeklyCalendarProps {
   currentMonday: Date;
-  classes: GymClass[];
+  classes: ClassWithCancellation[];
   loading: boolean;
   onPrevWeek: () => void;
   onNextWeek: () => void;
@@ -60,7 +62,7 @@ export function WeeklyCalendar({
 
   // Agrupar clases por día
   const classesByDay = useMemo(() => {
-    const map = new Map<number, GymClass[]>();
+    const map = new Map<number, ClassWithCancellation[]>();
     for (let i = 0; i < 7; i++) {
       map.set(i, []);
     }

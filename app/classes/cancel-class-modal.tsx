@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { cancelClass } from "@/src/services/classes/classes-service";
-import type { CancelClassResult, GymClass } from "@/src/types/classes";
+import { cancelClass, type CancelClassResult } from "@/src/services/classes/cancel-class-service";
+import type { GymClass } from "@/src/types/classes";
 
 interface Props {
   gymClass: GymClass;

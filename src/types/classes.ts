@@ -16,7 +16,6 @@ export interface GymClass {
   capacity: number;
   confirmedReservations: number;
   status: ClassStatus;
-  cancellationReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -50,7 +49,3 @@ export interface ClassServiceResult<T = GymClass> {
   status?: number;
 }
 
-export interface CancelClassResult {
-  reservationsCancelled: number;
-  noticesSent: number;
-}
