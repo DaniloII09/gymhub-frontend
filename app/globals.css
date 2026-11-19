@@ -23,6 +23,22 @@
   --color-gym-lime: #d2f65a;
   --color-gym-paper: #e8eadf;
   --color-gym-signature: #3f4438;
+
+  /* Panel del entrenador (mockup "vistas-horarios") */
+  --color-tr-sidebar: #1a211c;
+  --color-tr-sidebar-2: #29322b;
+  --color-tr-accent: #d2f578;
+  --color-tr-accent-soft: #eff8db;
+  --color-tr-bg: #f4f5f1;
+  --color-tr-ink: #20251f;
+  --color-tr-muted: #7a8077;
+  --color-tr-line: #e7eae2;
+  --color-tr-green: #397147;
+  --color-tr-green-soft: #edf5ee;
+  --color-tr-red: #a23b2e;
+  --color-tr-red-soft: #fbeae7;
+  --color-tr-amber: #95631f;
+  --color-tr-amber-soft: #fbf1dc;
 }
 
 @media (prefers-color-scheme: dark) {
