@@ -29,9 +29,14 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
 
   if (role === "ADMIN") {
     return (
-      <Link href="/classes" className={linkClass}>
-        📅 Calendario de Clases Grupales
-      </Link>
+      <>
+        <Link href="/classes" className={linkClass}>
+          📅 Calendario de Clases Grupales
+        </Link>
+        <Link href="/admin/maquinas" className={linkClass}>
+          🛠️ Inventario de máquinas
+        </Link>
+      </>
     );
   }
 
