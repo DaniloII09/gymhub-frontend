@@ -8,7 +8,7 @@ const ROUTES_WITHOUT_SESSION = ["/", "/home", "/login"];
 // Mientras no existan los layouts por rol (FE-2.2), todos entran al tablero.
 const ROLE_HOME: Record<Role, string> = {
   MEMBER: "/dashboard",
-  TRAINER: "/dashboard",
+  TRAINER: "/trainer",
   RECEPTION: "/dashboard",
   ADMIN: "/dashboard",
 };
