@@ -8,7 +8,7 @@ const linkClass =
 
 /**
  * Accesos de recepción desde el tablero, solo para Recepción y Administrador:
- * inscribir miembros (H01) y vender membresías (H04).
+ * inscribir miembros (H01), vender membresías (H04) y registrar ingresos (H13).
  */
 export function EnrollMemberLink() {
   const role = useRole();
@@ -21,6 +21,9 @@ export function EnrollMemberLink() {
       </Link>
       <Link href="/recepcion/membresias/nueva" className={linkClass}>
         Vender membresía
+      </Link>
+      <Link href="/recepcion/check-in" className={linkClass}>
+        Check-in
       </Link>
     </>
   );
