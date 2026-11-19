@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EnrollMemberLink } from "@/src/components/members/enroll-member-link";
 import { LogoutButton } from "../logout-button";
 import { SessionInfo } from "../session-info";
 
@@ -14,6 +15,7 @@ export default function DashboardPage() {
         >
           📅 Calendario de Clases Grupales
         </Link>
+        <EnrollMemberLink />
         <LogoutButton />
       </div>
     </div>
