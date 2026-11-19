@@ -2,6 +2,7 @@ import { ACCESS_DENIED_MESSAGE } from "@/src/components/access-denied";
 import { apiFetch } from "@/src/services/http/api-client";
 import { readErrorMessage } from "@/src/services/http/error-message";
 import type { EnrolledMember, EnrollMemberInput } from "@/src/types/members";
+import type { MemberSearchItem } from "@/src/types/membership-sales";
 import type { ServiceResult } from "@/src/types/service-result";
 
 export const EMAIL_TAKEN_MESSAGE = "Ese correo ya está registrado.";
@@ -36,5 +37,25 @@ export async function enrollMember(
     return { ok: false, error: ENROLL_SERVER_ERROR, status: res.status };
   } catch {
     return { ok: false, error: ENROLL_SERVER_ERROR, status: 0 };
+  }
+}
+
+export const SEARCH_MEMBERS_ERROR = "No pudimos buscar miembros. Intenta de nuevo.";
+
+/**
+ * GET /members?q= (Recepción y Administrador): miembros activos por código
+ * exacto o parte del nombre, máximo 10.
+ */
+export async function searchMembers(q: string): Promise<ServiceResult<MemberSearchItem[]>> {
+  try {
+    const res = await apiFetch(`members?${new URLSearchParams({ q: q.trim() }).toString()}`);
+    if (!res.ok) {
+      const error = res.status === 403 ? ACCESS_DENIED_MESSAGE : SEARCH_MEMBERS_ERROR;
+      return { ok: false, error, status: res.status };
+    }
+    const body = (await res.json()) as { data: MemberSearchItem[] };
+    return { ok: true, data: body.data, status: res.status };
+  } catch {
+    return { ok: false, error: SEARCH_MEMBERS_ERROR, status: 0 };
   }
 }
