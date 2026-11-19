@@ -55,6 +55,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/miembro/sesiones" className={secondaryLinkClass}>
           🗓️ Mis sesiones
         </Link>
+        <Link href="/miembro/maquinas" className={secondaryLinkClass}>
+          🏋️ Estado de las máquinas
+        </Link>
       </>
     );
   }
