@@ -61,6 +61,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/miembro/maquinas" className={secondaryLinkClass}>
           🏋️ Estado de las máquinas
         </Link>
+        <Link href="/miembro/pagos" className={linkClass}>
+          💳 Mis pagos
+        </Link>
       </>
     );
   }
