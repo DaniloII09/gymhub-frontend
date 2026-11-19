@@ -54,6 +54,10 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
     );
   }
 
+  if (role === "TRAINER") {
+    return <Link href="/entrenador/agenda" className={linkClass}>🗓️ Mi agenda de sesiones</Link>;
+  }
+
   return null;
 }
 
