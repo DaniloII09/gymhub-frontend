@@ -3,14 +3,17 @@
 import { useMemo } from "react";
 import type { GymClass } from "@/src/types/classes";
 
+type ClassWithCancellation = GymClass & { cancellationReason?: string | null };
+
 interface WeeklyCalendarProps {
   currentMonday: Date;
-  classes: GymClass[];
+  classes: ClassWithCancellation[];
   loading: boolean;
   onPrevWeek: () => void;
   onNextWeek: () => void;
   onCurrentWeek: () => void;
   onEditClass: (gymClass: GymClass) => void;
+  onCancelClass: (gymClass: GymClass) => void;
   onNewClass: () => void;
 }
 
@@ -43,6 +46,7 @@ export function WeeklyCalendar({
   onNextWeek,
   onCurrentWeek,
   onEditClass,
+  onCancelClass,
   onNewClass,
 }: WeeklyCalendarProps) {
   // Generar los 7 días de la semana (Lunes a Domingo)
@@ -58,7 +62,7 @@ export function WeeklyCalendar({
 
   // Agrupar clases por día
   const classesByDay = useMemo(() => {
-    const map = new Map<number, GymClass[]>();
+    const map = new Map<number, ClassWithCancellation[]>();
     for (let i = 0; i < 7; i++) {
       map.set(i, []);
     }
@@ -80,7 +84,10 @@ export function WeeklyCalendar({
 
     // Ordenar cada día por hora de inicio
     map.forEach((list) => {
-      list.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+      list.sort(
+        (a, b) =>
+          new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+      );
     });
 
     return map;
@@ -97,8 +104,9 @@ export function WeeklyCalendar({
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Semana del {currentMonday.getDate()} de{" "}
             {currentMonday.toLocaleString("es-ES", { month: "long" })} al{" "}
-            {sunday.getDate()} de {sunday.toLocaleString("es-ES", { month: "long" })}{" "}
-            de {sunday.getFullYear()}
+            {sunday.getDate()} de{" "}
+            {sunday.toLocaleString("es-ES", { month: "long" })} de{" "}
+            {sunday.getFullYear()}
           </p>
         </div>
 
@@ -140,14 +148,15 @@ export function WeeklyCalendar({
       {/* Grid semanal de 7 columnas */}
       {loading ? (
         <div className="flex h-96 items-center justify-center rounded-2xl border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-zinc-500 animate-pulse font-medium">Cargando clases de la semana...</p>
+          <p className="text-zinc-500 animate-pulse font-medium">
+            Cargando clases de la semana...
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
           {weekDays.map((day, idx) => {
             const dayClasses = classesByDay.get(idx) ?? [];
-            const isToday =
-              new Date().toDateString() === day.toDateString();
+            const isToday = new Date().toDateString() === day.toDateString();
 
             return (
               <div
@@ -164,7 +173,9 @@ export function WeeklyCalendar({
                     <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
                       {DAY_NAMES[idx]}
                     </h3>
-                    <p className="text-xs text-zinc-500">{formatDateHeader(day)}</p>
+                    <p className="text-xs text-zinc-500">
+                      {formatDateHeader(day)}
+                    </p>
                   </div>
                   {isToday && (
                     <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
@@ -177,7 +188,9 @@ export function WeeklyCalendar({
                 <div className="flex flex-1 flex-col gap-2.5">
                   {dayClasses.length === 0 ? (
                     <div className="flex flex-1 items-center justify-center">
-                      <span className="text-xs text-zinc-400 italic">Sin clases</span>
+                      <span className="text-xs text-zinc-400 italic">
+                        Sin clases
+                      </span>
                     </div>
                   ) : (
                     dayClasses.map((item) => {
@@ -205,38 +218,67 @@ export function WeeklyCalendar({
                             </span>
 
                             {!isCancelled && (
-                              <button
-                                type="button"
-                                onClick={() => onEditClass(item)}
-                                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
-                              >
-                                Editar
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => onEditClass(item)}
+                                  className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-200"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => onCancelClass(item)}
+                                  disabled={
+                                    new Date(item.startsAt).getTime() <=
+                                    Date.now()
+                                  }
+                                  className="text-[11px] font-semibold text-red-700 hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
                             )}
                           </div>
 
                           {/* Nombre de la clase (Tachada si cancelada) */}
                           <h4
                             className={`font-bold text-sm text-zinc-900 dark:text-zinc-100 ${
-                              isCancelled ? "line-through text-zinc-500 dark:text-zinc-400" : ""
+                              isCancelled
+                                ? "line-through text-zinc-500 dark:text-zinc-400"
+                                : ""
                             }`}
                           >
                             {item.name}
                           </h4>
+                          {isCancelled && item.cancellationReason && (
+                            <p className="mt-1 text-zinc-600 dark:text-zinc-300">
+                              Motivo: {item.cancellationReason}
+                            </p>
+                          )}
 
                           {/* Horario */}
-                          <p className={`mt-1 font-medium text-zinc-700 dark:text-zinc-300 ${isCancelled ? "line-through" : ""}`}>
-                            🕒 {formatTime(item.startsAt)} - {formatTime(item.endsAt)}
+                          <p
+                            className={`mt-1 font-medium text-zinc-700 dark:text-zinc-300 ${isCancelled ? "line-through" : ""}`}
+                          >
+                            🕒 {formatTime(item.startsAt)} -{" "}
+                            {formatTime(item.endsAt)}
                           </p>
 
                           {/* Entrenador */}
-                          <p className={`mt-0.5 text-zinc-600 dark:text-zinc-400 ${isCancelled ? "line-through" : ""}`}>
+                          <p
+                            className={`mt-0.5 text-zinc-600 dark:text-zinc-400 ${isCancelled ? "line-through" : ""}`}
+                          >
                             👤 {item.trainer?.fullName ?? "Sin entrenador"}
                           </p>
 
                           {/* Reservas confirmadas / Cupo */}
-                          <div className={`mt-2 flex items-center justify-between pt-1.5 border-t border-zinc-200/60 dark:border-zinc-700/50 ${isCancelled ? "line-through" : ""}`}>
-                            <span className="text-zinc-500 font-medium">Reservas:</span>
+                          <div
+                            className={`mt-2 flex items-center justify-between pt-1.5 border-t border-zinc-200/60 dark:border-zinc-700/50 ${isCancelled ? "line-through" : ""}`}
+                          >
+                            <span className="text-zinc-500 font-medium">
+                              Reservas:
+                            </span>
                             <span
                               className={`font-bold ${
                                 item.confirmedReservations >= item.capacity
@@ -260,4 +302,3 @@ export function WeeklyCalendar({
     </div>
   );
 }
-

@@ -1,25 +1,16 @@
-import Link from "next/link";
+import { RoleNavigation } from "@/src/components/dashboard/role-navigation";
 import { LogoutButton } from "../logout-button";
 import { SessionInfo } from "../session-info";
+import { MyMembershipLink } from "@/src/components/memberships/my-membership-link";
 
 export default function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
       <h1 className="text-4xl font-semibold">GymHub</h1>
       <SessionInfo />
+      <MyMembershipLink />
       <div className="flex flex-wrap items-center justify-center gap-4">
-        <Link
-          href="/classes"
-          className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 transition-colors"
-        >
-          📅 Calendario de Clases Grupales
-        </Link>
-        <Link
-          href="/admin/maquinas"
-          className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 transition-colors"
-        >
-          🛠️ Inventario de máquinas
-        </Link>
+        <RoleNavigation />
         <LogoutButton />
       </div>
     </div>
