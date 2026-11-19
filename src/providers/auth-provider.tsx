@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/src/stores/useAuthStore";
+import { passwordChangeRedirect } from "@/src/lib/role-home";
+import { useAuthStore, useAuthUser } from "@/src/stores/useAuthStore";
 import { refreshSession } from "@/src/services/auth/refresh-session";
 
 const PUBLIC_ROUTES = ["/login"];
@@ -39,5 +40,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
   }, [isPublic, isOpen, router]);
 
+  // FE-1.2: con contraseña temporal, cualquier ruta privada lleva a
+  // /cambiar-contrasena; sin ella, esa pantalla lleva al inicio del rol.
+  const user = useAuthUser();
+  const redirectTo = passwordChangeRedirect(pathname, user);
+  useEffect(() => {
+    if (redirectTo) router.replace(redirectTo);
+  }, [redirectTo, router]);
+
+  // No se muestra la pantalla privada ni un instante antes de redirigir.
+  if (redirectTo) return null;
   return children;
 }

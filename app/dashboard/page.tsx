@@ -1,4 +1,5 @@
 import { RoleNavigation } from "@/src/components/dashboard/role-navigation";
+import { EnrollMemberLink } from "@/src/components/members/enroll-member-link";
 import { LogoutButton } from "../logout-button";
 import { SessionInfo } from "../session-info";
 import { MyMembershipLink } from "@/src/components/memberships/my-membership-link";
@@ -11,6 +12,7 @@ export default function DashboardPage() {
       <MyMembershipLink />
       <div className="flex flex-wrap items-center justify-center gap-4">
         <RoleNavigation />
+        <EnrollMemberLink />
         <LogoutButton />
       </div>
     </div>
