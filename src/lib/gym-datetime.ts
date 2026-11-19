@@ -1,5 +1,6 @@
 export const GYM_TIME_ZONE = "America/El_Salvador";
 export const MS_PER_DAY = 24 * 60 * 60 * 1000;
+export const TRAINER_SLOTS_RANGE_DAYS = 14;
 export const MEMBER_CLASSES_RANGE_DAYS = 7;
 
 const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -30,12 +31,19 @@ const shortDateFormatter = new Intl.DateTimeFormat("es-SV", {
   year: "numeric",
 });
 
+const usdFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 function toValidDate(value: string | Date): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
 /**
- * Devuelve la clave calendario `YYYY-MM-DD` en la zona horaria del gimnasio (`America/El_Salvador`).
+ * Devuelve la clave calendario `YYYY-MM-DD` en `America/El_Salvador`.
  */
 export function getGymDateKey(value: string | Date): string {
   const date = toValidDate(value);
@@ -53,7 +61,7 @@ export function formatGymTime(value: string | Date): string {
 }
 
 /**
- * Formatea una fecha `YYYY-MM-DD` (p. ej. "2026-11-23") sin desfase por UTC.
+ * Formatea una fecha `YYYY-MM-DD` (del servidor en `America/El_Salvador`) sin desfase por UTC.
  */
 export function formatGymDayHeading(dateKey: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return dateKey;
@@ -64,7 +72,7 @@ export function formatGymDayHeading(dateKey: string): string {
 }
 
 /**
- * Formatea una fecha/hora ISO en formato corto DD/MM/YYYY en `America/El_Salvador`.
+ * Formatea una fecha/hora ISO en formato DD/MM/YYYY en `America/El_Salvador`.
  */
 export function formatGymShortDate(value: string | Date): string {
   const date = toValidDate(value);
@@ -80,11 +88,25 @@ export function formatGymTimeRange(startsAt: string | Date, endsAt: string | Dat
 }
 
 /**
- * Construye el intervalo exacto de 7 días para la consulta MEMBER de `GET /api/v1/classes`.
- * Nunca excede `7 * 24h` para evitar el error 400 del backend.
+ * Construye el intervalo exacto de 14 días para consultar espacios libres de entrenadores (H11).
+ * Nunca solicita 15 días para evitar HTTP 400 del backend.
  */
+export function buildTrainerSlotsRange(now: Date = new Date()): { from: Date; to: Date } {
+  const from = new Date(now.getTime());
+  const to = new Date(from.getTime() + TRAINER_SLOTS_RANGE_DAYS * MS_PER_DAY);
+  return { from, to };
+}
+
+/** Rango exacto permitido para consultar el calendario de clases del miembro. */
 export function buildMemberClassesRange(now: Date = new Date()): { from: Date; to: Date } {
   const from = new Date(now.getTime());
   const to = new Date(from.getTime() + MEMBER_CLASSES_RANGE_DAYS * MS_PER_DAY);
   return { from, to };
+}
+
+/**
+ * Formatea montos en USD tal como los configura el backend.
+ */
+export function formatUsdPrice(amount: number): string {
+  return usdFormatter.format(amount);
 }
