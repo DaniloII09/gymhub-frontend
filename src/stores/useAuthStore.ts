@@ -16,6 +16,8 @@ type AuthState = {
   user: AuthUser | null;
   setSession: (session: ClientSession) => void;
   clearSession: () => void;
+  /** El usuario ya cambió su contraseña temporal (FE-1.2). */
+  markPasswordChanged: () => void;
 };
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -26,6 +28,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
     set({ status: "authenticated", accessToken, user }),
   clearSession: () =>
     set({ status: "unauthenticated", accessToken: null, user: null }),
+  markPasswordChanged: () =>
+    set((state) =>
+      state.user ? { user: { ...state.user, mustChangePassword: false } } : state,
+    ),
 }));
 
 // Selectores de conveniencia.

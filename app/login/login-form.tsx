@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { login, type LoginState } from "@/app/actions/auth";
+import { pathAfterLogin } from "@/src/lib/role-home";
 import { useAuthStore } from "@/src/stores/useAuthStore";
 
 const initialState: LoginState = {};
@@ -15,7 +16,8 @@ export function LoginForm() {
   useEffect(() => {
     if (!state.session) return;
     useAuthStore.getState().setSession(state.session);
-    router.replace("/dashboard");
+    // Con contraseña temporal va primero a cambiarla (FE-1.2).
+    router.replace(pathAfterLogin(state.session.user));
   }, [state.session, router]);
 
   return (
