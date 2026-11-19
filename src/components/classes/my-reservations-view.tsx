@@ -6,7 +6,7 @@ import {
   formatGymShortDate,
   formatGymTimeRange,
 } from "@/src/lib/gym-datetime";
-import { fetchMyReservations } from "@/src/services/classes/classes-service";
+import { cancelMyReservation, fetchMyReservations } from "@/src/services/classes/classes-service";
 import type { ClassReservation } from "@/src/types/classes";
 import {
   partitionReservations,
@@ -24,17 +24,37 @@ export interface MyReservationsPanelProps {
   sessionExpired: boolean;
   nowMs: number;
   onRetry: () => void;
+  onCancel?: (reservationId: number) => Promise<void>;
+  cancellingId?: number | null;
+  cancelError?: string | null;
+  cancelSuccess?: string | null;
+}
+
+const CANCELLATION_WINDOW_MS = 2 * 60 * 60 * 1000;
+
+export function canCancelReservation(reservation: ClassReservation, nowMs: number): boolean {
+  return reservation.status === "CONFIRMED" &&
+    reservation.origin !== "DROP_IN" &&
+    reservation.gymClass.status === "SCHEDULED" &&
+    new Date(reservation.gymClass.startsAt).getTime() - nowMs >= CANCELLATION_WINDOW_MS;
 }
 
 function ReservationListSection({
   title,
   emptyLabel,
   items,
+  nowMs,
+  onCancel,
+  cancellingId,
 }: {
   title: string;
   emptyLabel: string;
   items: ClassReservation[];
+  nowMs: number;
+  onCancel?: (reservationId: number) => Promise<void>;
+  cancellingId?: number | null;
 }) {
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
   return (
     <section aria-labelledby={`section-${title}`} className="flex flex-col gap-3">
       <h2
@@ -104,6 +124,43 @@ function ReservationListSection({
                       </dd>
                     </div>
                   </dl>
+                  {reservation.status === "CONFIRMED" && onCancel && (
+                    <div className="mt-4 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+                      {confirmingId === reservation.id ? (
+                        <div className="space-y-2" role="group" aria-label="Confirmar cancelación">
+                          <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                            ¿Seguro que deseas cancelar esta reserva?
+                          </p>
+                          <div className="flex gap-2">
+                            <button type="button" onClick={() => setConfirmingId(null)}
+                              disabled={cancellingId === reservation.id}
+                              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700">
+                              Volver
+                            </button>
+                            <button type="button" onClick={async () => {
+                              await onCancel(reservation.id);
+                              setConfirmingId(null);
+                            }} disabled={cancellingId === reservation.id}
+                              className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">
+                              {cancellingId === reservation.id ? "Cancelando..." : "Confirmar cancelación"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => setConfirmingId(reservation.id)}
+                          disabled={!canCancelReservation(reservation, nowMs) || cancellingId !== null}
+                          className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-semibold text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-800 dark:text-red-300">
+                          Cancelar reserva
+                        </button>
+                      )}
+                      {reservation.origin === "DROP_IN" && (
+                        <p className="mt-1 text-xs text-zinc-500">La clase suelta no se puede cancelar.</p>
+                      )}
+                      {reservation.origin !== "DROP_IN" && !canCancelReservation(reservation, nowMs) && (
+                        <p className="mt-1 text-xs text-zinc-500">Solo puedes cancelar hasta 2 horas antes de la clase.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </li>
             );
@@ -116,7 +173,7 @@ function ReservationListSection({
 
 /**
  * Vista presentacional pura de "Mis reservas" para MEMBER (FE-7.2).
- * No incluye acciones ni botones de cancelación (H08 fuera de alcance).
+ * Incluye confirmación de cancelación de reservas propias (H08 / FE-8.1).
  */
 export function MyReservationsPanel({
   reservations,
@@ -125,6 +182,10 @@ export function MyReservationsPanel({
   sessionExpired,
   nowMs,
   onRetry,
+  onCancel,
+  cancellingId = null,
+  cancelError = null,
+  cancelSuccess = null,
 }: MyReservationsPanelProps) {
   const { upcoming, past } = useMemo(
     () => partitionReservations(reservations, nowMs),
@@ -160,6 +221,9 @@ export function MyReservationsPanel({
           </button>
         </div>
       </header>
+
+      {cancelError && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">{cancelError}</p>}
+      {cancelSuccess && <p role="status" className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">{cancelSuccess}</p>}
 
       {sessionExpired && (
         <div
@@ -224,11 +288,17 @@ export function MyReservationsPanel({
             title="Próximas reservas"
             emptyLabel="No tienes reservas próximas."
             items={upcoming}
+            nowMs={nowMs}
+            onCancel={onCancel}
+            cancellingId={cancellingId}
           />
           <ReservationListSection
             title="Reservas pasadas"
             emptyLabel="Aún no tienes reservas pasadas."
             items={past}
+            nowMs={nowMs}
+            onCancel={onCancel}
+            cancellingId={cancellingId}
           />
         </div>
       )}
@@ -246,6 +316,9 @@ export function MyReservationsView() {
   const [sessionExpired, setSessionExpired] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [reloadKey, setReloadKey] = useState(0);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -280,6 +353,25 @@ export function MyReservationsView() {
     setReloadKey((k) => k + 1);
   }, []);
 
+  const handleCancel = useCallback(async (reservationId: number) => {
+    if (cancellingId !== null) return;
+    setCancellingId(reservationId);
+    setCancelError(null);
+    setCancelSuccess(null);
+    const result = await cancelMyReservation(reservationId);
+    if (result.sessionExpired) {
+      setSessionExpired(true);
+    } else if (result.ok && result.data) {
+      const updated = result.data;
+      setReservations((items) => items.map((item) => item.id === reservationId ? updated : item));
+      setCancelSuccess("Reserva cancelada. El cupo ya está disponible.");
+      setNowMs(Date.now());
+    } else {
+      setCancelError(result.error ?? "No se pudo cancelar la reserva.");
+    }
+    setCancellingId(null);
+  }, [cancellingId]);
+
   return (
     <MyReservationsPanel
       reservations={reservations}
@@ -288,6 +380,10 @@ export function MyReservationsView() {
       sessionExpired={sessionExpired}
       nowMs={nowMs}
       onRetry={handleRetry}
+      onCancel={handleCancel}
+      cancellingId={cancellingId}
+      cancelError={cancelError}
+      cancelSuccess={cancelSuccess}
     />
   );
 }

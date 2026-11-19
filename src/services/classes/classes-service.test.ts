@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  cancelMyReservation,
   createClass,
   fetchMemberClasses,
   fetchMyReservations,
@@ -62,6 +63,28 @@ describe("classes-service", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  describe("cancelMyReservation", () => {
+    it("envía solo el id y devuelve el estado actualizado", async () => {
+      const cancelled = { ...mockReservation, status: "CANCELLED", cancelledAt: "2026-11-18T11:00:00.000Z" };
+      const spy = vi.spyOn(apiClient, "apiFetch").mockResolvedValue(
+        new Response(JSON.stringify(cancelled), { status: 200 }),
+      );
+      const result = await cancelMyReservation(50);
+      expect(spy).toHaveBeenCalledWith("classes/reservations/50/cancel", { method: "PATCH" });
+      expect(result.data?.status).toBe("CANCELLED");
+    });
+
+    it("muestra el mensaje del backend cuando se vence el plazo", async () => {
+      vi.spyOn(apiClient, "apiFetch").mockResolvedValue(
+        new Response(JSON.stringify({ message: "Solo puedes cancelar hasta 2 horas antes de la clase." }), { status: 409 }),
+      );
+      const result = await cancelMyReservation(50);
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe(409);
+      expect(result.error).toBe("Solo puedes cancelar hasta 2 horas antes de la clase.");
+    });
   });
 
   describe("fetchWeeklyClasses", () => {
