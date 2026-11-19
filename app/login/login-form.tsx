@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { login, type LoginState } from "@/app/actions/auth";
+import { homeRouteForRole } from "@/src/lib/role-routes";
 import { useAuthStore } from "@/src/stores/useAuthStore";
 
 const initialState: LoginState = {};
@@ -15,7 +16,7 @@ export function LoginForm() {
   useEffect(() => {
     if (!state.session) return;
     useAuthStore.getState().setSession(state.session);
-    router.replace("/dashboard");
+    router.replace(homeRouteForRole(state.session.user.role));
   }, [state.session, router]);
 
   return (
