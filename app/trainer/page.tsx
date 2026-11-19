@@ -94,12 +94,20 @@ export default function TrainerHomePage() {
               : `Hoy tienes ${todayClasses.length} ${todayClasses.length === 1 ? "clase" : "clases"}. Haz que cada entrenamiento cuente.`}
           </p>
         </div>
-        <Link
-          href="/trainer/agenda"
-          className="flex h-10 items-center rounded-lg border border-tr-accent bg-tr-accent px-4 text-xs"
-        >
-          + Agregar mi horario
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/entrenador/agenda"
+            className="flex h-10 items-center rounded-lg border border-tr-line bg-white px-4 text-xs"
+          >
+            🗓️ Ver sesiones personales
+          </Link>
+          <Link
+            href="/trainer/agenda"
+            className="flex h-10 items-center rounded-lg border border-tr-accent bg-tr-accent px-4 text-xs"
+          >
+            + Agregar mi horario
+          </Link>
+        </div>
       </div>
 
       <div className="grid items-start gap-6 xl:grid-cols-[1fr_368px]">
