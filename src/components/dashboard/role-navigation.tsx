@@ -36,6 +36,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/admin/maquinas" className={linkClass}>
           🛠️ Inventario de máquinas
         </Link>
+        <Link href="/admin/planes" className={linkClass}>
+          💳 Planes
+        </Link>
       </>
     );
   }
