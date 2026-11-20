@@ -66,25 +66,34 @@ export async function registerPayment(
     if (res.ok) {
       return { ok: true, data: (await res.json()) as PaymentReceipt, status: res.status };
     }
-    if (res.status === 409) return { ok: false, error: CHARGE_ALREADY_PAID_MESSAGE, status: 409 };
-    if (res.status === 404) return { ok: false, error: CHARGE_NOT_FOUND_MESSAGE, status: 404 };
-    if (res.status === 403) return { ok: false, error: ACCESS_DENIED_MESSAGE, status: 403 };
-    if (res.status === 400) {
-      const body = (await res.json().catch(() => null)) as {
-        message?: unknown;
-        declineReason?: unknown;
-      } | null;
-      if (typeof body?.declineReason === "string" && body.declineReason) {
-        return { ok: false, error: declinedMessage(body.declineReason), status: 400 };
-      }
-      return { ok: false, error: messageFromBody(body?.message) ?? PAYMENT_ERROR, status: 400 };
-    }
-    return { ok: false, error: PAYMENT_ERROR, status: res.status };
+    return paymentFailure(res);
   } catch {
     // Sin respuesta no se sabe si el pago entró. Reintentar es seguro: si ya
     // quedó pagado, el servidor responde 409 y no cobra dos veces.
     return { ok: false, error: PAYMENT_ERROR, status: 0 };
   }
+}
+
+/**
+ * Respuesta no exitosa de un pago. La comparten POST /payments (H15) y
+ * POST /charges/{chargeId}/card-payment (H16), que responden igual:
+ * 400 con `declineReason` si la pasarela rechaza la tarjeta.
+ */
+export async function paymentFailure<T>(res: Response): Promise<ServiceResult<T>> {
+  if (res.status === 409) return { ok: false, error: CHARGE_ALREADY_PAID_MESSAGE, status: 409 };
+  if (res.status === 404) return { ok: false, error: CHARGE_NOT_FOUND_MESSAGE, status: 404 };
+  if (res.status === 403) return { ok: false, error: ACCESS_DENIED_MESSAGE, status: 403 };
+  if (res.status === 400) {
+    const body = (await res.json().catch(() => null)) as {
+      message?: unknown;
+      declineReason?: unknown;
+    } | null;
+    if (typeof body?.declineReason === "string" && body.declineReason) {
+      return { ok: false, error: declinedMessage(body.declineReason), status: 400 };
+    }
+    return { ok: false, error: messageFromBody(body?.message) ?? PAYMENT_ERROR, status: 400 };
+  }
+  return { ok: false, error: PAYMENT_ERROR, status: res.status };
 }
 
 export type ReceiptFile = { blob: Blob; filename: string };

@@ -73,3 +73,43 @@ export type PaymentReceipt = ReceiptView & {
   paymentId: number;
   chargeId: number;
 };
+
+// --- Mis pagos del miembro (H16: BE-16.1 y BE-16.2) ---
+
+/** Estado de la membresía que devuelve el pago en línea de un cobro de membresía. */
+export type MembershipStatusAfterPayment = "ACTIVE" | "PENDING_PAYMENT" | "EXPIRED" | "NONE";
+
+/** Cuerpo de POST /charges/{chargeId}/card-payment. El monto sale del cobro guardado. */
+export type CardPaymentInput = {
+  card: CardInput;
+  /** uuid nuevo en cada clic de "Pagar". */
+  idempotencyKey: string;
+};
+
+/** Respuesta 201 de POST /charges/{chargeId}/card-payment (CardPaymentResponseDto). */
+export type CardPaymentResult = ReceiptView & {
+  chargeId: number;
+  status: "PAID";
+  /** Solo en cobros de membresía; null en los demás. */
+  membershipStatus: MembershipStatusAfterPayment | null;
+};
+
+/** Un comprobante de GET /receipts/me (ReceiptSummaryDto). */
+export type ReceiptSummary = {
+  receiptId: number;
+  number: string;
+  /** Fecha y hora ISO. */
+  issuedAt: string;
+  concept: string;
+  amount: number;
+  method: PaymentMethod;
+  cardLast4: string | null;
+};
+
+/** Respuesta de GET /receipts/me: 20 por página, del más reciente al más antiguo. */
+export type ReceiptPage = {
+  data: ReceiptSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
