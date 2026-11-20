@@ -1,7 +1,7 @@
 import { ACCESS_DENIED_MESSAGE } from "@/src/components/access-denied";
 import { apiFetch } from "@/src/services/http/api-client";
 import { readErrorMessage } from "@/src/services/http/error-message";
-import type { CheckInMember, CheckInResult } from "@/src/types/check-ins";
+import type { CheckInMember, CheckInResult, RegisterCheckInInput } from "@/src/types/check-ins";
 import type { ServiceResult } from "@/src/types/service-result";
 
 export const LOOKUP_ERROR = "No pudimos buscar miembros. Intenta de nuevo.";
@@ -26,11 +26,20 @@ export async function lookupMembers(q: string): Promise<ServiceResult<CheckInMem
 
 /**
  * POST /check-ins: registra el ingreso con la hora del servidor.
- * 409 trae "Este miembro ya registró su ingreso hace menos de 30 minutos.".
+ * - Cuando `exceptionReason` tiene contenido tras recortar espacios, lo envía para ingreso excepcional.
+ * - 400 trae el motivo de validación (motivo faltante o longitud inválida).
+ * - 409 trae "Este miembro ya registró su ingreso hace menos de 30 minutos.".
  */
-export async function registerCheckIn(memberId: string): Promise<ServiceResult<CheckInResult>> {
+export async function registerCheckIn(
+  memberId: string,
+  exceptionReason?: string,
+): Promise<ServiceResult<CheckInResult>> {
   try {
-    const res = await apiFetch("check-ins", { method: "POST", body: JSON.stringify({ memberId }) });
+    const trimmedReason = exceptionReason?.trim();
+    const payload: RegisterCheckInInput = trimmedReason
+      ? { memberId, exceptionReason: trimmedReason }
+      : { memberId };
+    const res = await apiFetch("check-ins", { method: "POST", body: JSON.stringify(payload) });
     if (res.status === 201) {
       return { ok: true, data: (await res.json()) as CheckInResult, status: 201 };
     }
