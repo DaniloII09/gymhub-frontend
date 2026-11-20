@@ -39,7 +39,7 @@ export function StaffFormDialog({
   useEffect(() => {
     if (Object.keys(errors).length > 0) {
       const firstError = Object.keys(errors)[0];
-      const element = document.querySelector(`[name="${firstError}"]`);
+      const element = document.querySelector(`[name="${firstError}"]`) as HTMLElement | null;
       element?.focus();
     }
   }, [errors]);
