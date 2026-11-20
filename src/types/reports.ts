@@ -39,3 +39,40 @@ export const INCOME_CONCEPT_LABELS: Record<IncomeConcept, string> = {
   dropIn: "Clases sueltas",
   personalSession: "Sesiones personales",
 };
+
+/** HIGH: de mayor ocupación; LOW: de menor; null: sin resaltar. */
+export type OccupancyLevel = "HIGH" | "LOW" | null;
+
+/** Clases con un mismo nombre en el rango (GET /reports/occupancy). */
+export interface ClassOccupancy {
+  name: string;
+  /** Clases con ese nombre que cuentan para el reporte. */
+  sessions: number;
+  /** Suma del cupo máximo. */
+  capacity: number;
+  /** Suma de reservas confirmadas. */
+  confirmedReservations: number;
+  /** Reservas confirmadas / cupo × 100, con un decimal. */
+  occupancyPercent: number;
+  level: OccupancyLevel;
+}
+
+export interface OccupancyTotals {
+  /** Clases distintas (por nombre). */
+  classCount: number;
+  sessions: number;
+  capacity: number;
+  confirmedReservations: number;
+  occupancyPercent: number;
+}
+
+/** H28 · BE-28.1. Ocupación de las clases ya terminadas en un rango. */
+export interface OccupancyReport {
+  /** YYYY-MM-DD. */
+  from: string;
+  /** YYYY-MM-DD. */
+  to: string;
+  totals: OccupancyTotals;
+  /** De mayor a menor ocupación; con el mismo porcentaje, por nombre. */
+  classes: ClassOccupancy[];
+}
