@@ -5,12 +5,12 @@ import {
   formatAmount,
   INCOME_CONCEPTS,
   monthLabel,
-  RANGE_PRESET_LABELS,
   rangeText,
   receiptCountText,
   type DateRange,
   type RangePreset,
 } from "./income-report-logic";
+import { ReportRangeForm } from "./report-range-form";
 
 export type IncomeReportViewProps = {
   range: DateRange;
@@ -23,8 +23,6 @@ export type IncomeReportViewProps = {
   onSubmit: () => void;
   onRetry: () => void;
 };
-
-const PRESETS = Object.keys(RANGE_PRESET_LABELS) as RangePreset[];
 
 const CONCEPT_COLORS = {
   membership: "bg-indigo-500",
@@ -53,64 +51,14 @@ export function IncomeReportView({
         </p>
       </div>
 
-      <form
-        noValidate
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSubmit();
-        }}
-        className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-      >
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">Desde</span>
-            <input
-              type="date"
-              name="from"
-              value={range.from}
-              onChange={(event) => onChangeRange("from", event.target.value)}
-              aria-invalid={rangeError ? true : undefined}
-              className="rounded-lg border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-950"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">Hasta</span>
-            <input
-              type="date"
-              name="to"
-              value={range.to}
-              onChange={(event) => onChangeRange("to", event.target.value)}
-              aria-invalid={rangeError ? true : undefined}
-              className="rounded-lg border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-950"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Consultando..." : "Consultar"}
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {PRESETS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              disabled={loading}
-              onClick={() => onPreset(preset)}
-              className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:hover:bg-zinc-800"
-            >
-              {RANGE_PRESET_LABELS[preset]}
-            </button>
-          ))}
-        </div>
-        {rangeError && (
-          <p role="alert" className="text-sm text-red-600">
-            {rangeError}
-          </p>
-        )}
-      </form>
+      <ReportRangeForm
+        range={range}
+        rangeError={rangeError}
+        loading={loading}
+        onChangeRange={onChangeRange}
+        onPreset={onPreset}
+        onSubmit={onSubmit}
+      />
 
       <ReportBody loading={loading} loadError={loadError} report={report} onRetry={onRetry} />
     </div>
