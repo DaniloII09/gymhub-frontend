@@ -5,6 +5,9 @@ const publicRoutes = ["/login"];
 // Páginas abiertas a cualquier visitante, con o sin sesión.
 const openRoutes = ["/", "/home"];
 
+// Rutas protegidas que requieren sesión. El cliente valida los roles con RoleGate.
+const protectedRoutes = ["/miembro", "/admin", "/recepcion", "/entrenador", "/dashboard", "/cambiar-contrasena", "/classes"];
+
 // Chequeo optimista: solo verifica que exista la cookie de sesión.
 // Si el backend expone un token verificable (p. ej. JWT), validarlo aquí.
 export function proxy(request: NextRequest) {
@@ -14,7 +17,9 @@ export function proxy(request: NextRequest) {
   const isPublicRoute = publicRoutes.includes(pathname);
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
 
-  if (!isPublicRoute && !hasSession) {
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+
+  if (!isPublicRoute && !hasSession && isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", request.nextUrl));
   }
 

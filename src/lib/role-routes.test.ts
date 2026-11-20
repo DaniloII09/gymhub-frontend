@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { homeRouteForRole } from "./role-routes";
+import { roleHomePath } from "./role-home";
 
-describe("homeRouteForRole", () => {
+describe("roleHomePath", () => {
   it("envía al entrenador a su jornada", () => {
-    expect(homeRouteForRole("TRAINER")).toBe("/trainer");
+    expect(roleHomePath("TRAINER")).toBe("/trainer");
   });
+
   it("usa el dashboard para el resto de roles o sin rol", () => {
-    expect(homeRouteForRole("ADMIN")).toBe("/dashboard");
-    expect(homeRouteForRole("MEMBER")).toBe("/dashboard");
-    expect(homeRouteForRole("RECEPTION")).toBe("/dashboard");
-    expect(homeRouteForRole(null)).toBe("/dashboard");
+    expect(roleHomePath("ADMIN")).toBe("/dashboard");
+    expect(roleHomePath("MEMBER")).toBe("/dashboard");
+    expect(roleHomePath("RECEPTION")).toBe("/dashboard");
+    expect(roleHomePath(null)).toBe("/dashboard");
   });
 });
