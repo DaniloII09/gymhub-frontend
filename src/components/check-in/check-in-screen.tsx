@@ -3,93 +3,100 @@
 import { useEffect, useRef, useState } from "react";
 import { lookupMembers, registerCheckIn } from "@/src/services/check-ins/check-ins-service";
 import type { CheckInMember } from "@/src/types/check-ins";
-import { checkInSuccessMessage, LOOKUP_DEBOUNCE_MS, shouldLookup } from "./check-in-logic";
+import {
+  applyCheckInFailure,
+  applyCheckInSuccess,
+  applyExceptionReasonChange,
+  applySelectMember,
+  applyTermChange,
+  INITIAL_CHECK_IN_STATE,
+  LOOKUP_DEBOUNCE_MS,
+  prepareCheckInSubmission,
+  shouldLookup,
+} from "./check-in-logic";
 import { CheckInView } from "./check-in-view";
 
-/** Check-in en recepción (H13 · FE-13.1). */
+/** Check-in en recepción (H13 · FE-13.1, H14 · FE-14.1). */
 export function CheckInScreen() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [term, setTerm] = useState("");
-  const [results, setResults] = useState<CheckInMember[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<CheckInMember | null>(null);
-  const [registering, setRegistering] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Evita envíos dobles antes de que React repinte el estado `registering`.
+  const sendingRef = useRef(false);
+  const [state, setState] = useState(INITIAL_CHECK_IN_STATE);
 
   // Busca 400 ms después de dejar de escribir; con menos de 2 caracteres no busca.
   useEffect(() => {
-    if (!shouldLookup(term) || selected) return;
+    if (!shouldLookup(state.term) || state.selected) return;
     let cancelled = false;
     const timer = setTimeout(() => {
-      setSearching(true);
-      lookupMembers(term).then((res) => {
+      setState((prev) => ({ ...prev, searching: true }));
+      lookupMembers(state.term).then((res) => {
         if (cancelled) return;
-        setSearching(false);
-        if (res.ok) {
-          setResults(res.data);
-          setSearchError(null);
-        } else {
-          setResults([]);
-          setSearchError(res.error);
-        }
+        setState((prev) =>
+          res.ok
+            ? { ...prev, searching: false, results: res.data, searchError: null }
+            : { ...prev, searching: false, results: [], searchError: res.error },
+        );
       });
     }, LOOKUP_DEBOUNCE_MS);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [term, selected]);
+  }, [state.term, state.selected]);
 
   function handleTermChange(next: string) {
-    setTerm(next);
-    setSelected(null);
-    setResults([]);
-    setSearching(false);
-    setSearchError(null);
-    setSuccess(null);
-    setError(null);
+    setState((prev) => applyTermChange(prev, next));
   }
 
   function handleSelect(member: CheckInMember) {
-    setSelected(member);
-    setError(null);
-    setSuccess(null);
+    setState((prev) => applySelectMember(prev, member));
+  }
+
+  function handleExceptionReasonChange(next: string) {
+    setState((prev) => applyExceptionReasonChange(prev, next));
   }
 
   async function handleRegister() {
-    if (!selected) return;
-    setRegistering(true);
-    setError(null);
-    const res = await registerCheckIn(selected.memberId);
-    setRegistering(false);
+    if (!state.selected || sendingRef.current) return;
 
-    if (!res.ok) {
-      setError(res.error);
+    const submission = prepareCheckInSubmission(state.selected, state.exceptionReason);
+    if (!submission.ok) {
+      setState((prev) => ({ ...prev, reasonError: submission.reasonError, error: null }));
       return;
     }
-    // Éxito: se limpia el buscador y el foco vuelve a él para el siguiente miembro.
-    setSuccess(checkInSuccessMessage(res.data.checkedInAt));
-    setTerm("");
-    setResults([]);
-    setSelected(null);
-    requestAnimationFrame(() => inputRef.current?.focus());
+
+    sendingRef.current = true;
+    setState((prev) => ({ ...prev, registering: true, reasonError: null, error: null }));
+    try {
+      const res = await registerCheckIn(submission.memberId, submission.exceptionReason);
+      if (!res.ok) {
+        setState((prev) => applyCheckInFailure(prev, res.error));
+        return;
+      }
+      // Éxito: limpia el buscador, el motivo y devuelve el foco para el siguiente miembro.
+      setState((prev) => applyCheckInSuccess(prev, res.data));
+      requestAnimationFrame(() => inputRef.current?.focus());
+    } finally {
+      sendingRef.current = false;
+    }
   }
 
   return (
     <CheckInView
-      term={term}
+      term={state.term}
       inputRef={inputRef}
-      results={results}
-      searching={searching}
-      searchError={searchError}
-      selected={selected}
-      registering={registering}
-      success={success}
-      error={error}
+      results={state.results}
+      searching={state.searching}
+      searchError={state.searchError}
+      selected={state.selected}
+      exceptionReason={state.exceptionReason}
+      reasonError={state.reasonError}
+      registering={state.registering}
+      success={state.success}
+      error={state.error}
       onTermChange={handleTermChange}
       onSelect={handleSelect}
+      onExceptionReasonChange={handleExceptionReasonChange}
       onRegister={handleRegister}
     />
   );
