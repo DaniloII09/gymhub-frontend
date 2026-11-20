@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { TrainerRoleGuard } from "@/src/components/trainers/trainer-role-guard";
+import { TrainerRoleGuard } from "@/src/components/trainer/trainer-role-guard";
 import { TrainerAgendaView } from "@/src/components/trainers/trainer-agenda-view";
 
 export const metadata: Metadata = {
