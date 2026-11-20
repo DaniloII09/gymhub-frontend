@@ -76,3 +76,28 @@ export interface OccupancyReport {
   /** De mayor a menor ocupación; con el mismo porcentaje, por nombre. */
   classes: ClassOccupancy[];
 }
+
+/** Resumen de vencimientos y renovaciones (H30 · GET /reports/renewal-rate). */
+export interface RenewalRateSummary {
+  expiredCount: number;
+  renewedCount: number;
+  /** Porcentaje con un decimal; null cuando expiredCount es 0. */
+  renewalRate: number | null;
+}
+
+export interface RenewalRateMonth extends RenewalRateSummary {
+  /** YYYY-MM. */
+  month: string;
+}
+
+/** H30 · BE-30.1. Tasa de renovación mensual y del rango para el Administrador. */
+export interface RenewalRateReport {
+  /** YYYY-MM-DD. */
+  from: string;
+  /** YYYY-MM-DD. */
+  to: string;
+  totals: RenewalRateSummary;
+  months: RenewalRateMonth[];
+  /** "No hay membresías vencidas en ese rango." si no hubo vencimientos; si no, null. */
+  message: string | null;
+}

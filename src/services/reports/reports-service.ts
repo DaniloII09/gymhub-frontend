@@ -1,7 +1,7 @@
 import { ACCESS_DENIED_MESSAGE } from "@/src/components/access-denied";
 import { apiFetch } from "@/src/services/http/api-client";
 import { readErrorMessage } from "@/src/services/http/error-message";
-import type { IncomeReport, OccupancyReport } from "@/src/types/reports";
+import type { IncomeReport, OccupancyReport, RenewalRateReport } from "@/src/types/reports";
 import type { ServiceResult } from "@/src/types/service-result";
 
 export const LOAD_INCOME_REPORT_ERROR =
@@ -71,5 +71,34 @@ export async function fetchOccupancyReport(
     return { ok: false, error: LOAD_OCCUPANCY_REPORT_ERROR, status: res.status };
   } catch {
     return { ok: false, error: LOAD_OCCUPANCY_REPORT_ERROR, status: 0 };
+  }
+}
+
+export const LOAD_RENEWAL_RATE_REPORT_ERROR =
+  "No pudimos cargar el reporte de tasa de renovación. Intenta de nuevo.";
+export const NO_EXPIRED_MEMBERSHIPS_MESSAGE =
+  "No hay membresías vencidas en ese rango.";
+
+/**
+ * GET /reports/renewal-rate?from=&to= (H30 · BE-30.1, solo Administrador).
+ */
+export async function fetchRenewalRateReport(
+  from: string,
+  to: string,
+): Promise<ServiceResult<RenewalRateReport>> {
+  try {
+    const params = new URLSearchParams({ from, to });
+    const res = await apiFetch(`reports/renewal-rate?${params.toString()}`);
+    if (res.ok) {
+      return { ok: true, data: (await res.json()) as RenewalRateReport, status: res.status };
+    }
+    if (res.status === 403) return { ok: false, error: ACCESS_DENIED_MESSAGE, status: 403 };
+    if (res.status === 400) {
+      const message = await readErrorMessage(res);
+      return { ok: false, error: message ?? LOAD_RENEWAL_RATE_REPORT_ERROR, status: 400 };
+    }
+    return { ok: false, error: LOAD_RENEWAL_RATE_REPORT_ERROR, status: res.status };
+  } catch {
+    return { ok: false, error: LOAD_RENEWAL_RATE_REPORT_ERROR, status: 0 };
   }
 }

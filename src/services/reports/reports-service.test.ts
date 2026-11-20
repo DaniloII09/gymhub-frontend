@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ACCESS_DENIED_MESSAGE } from "@/src/components/access-denied";
 import * as apiClient from "@/src/services/http/api-client";
-import type { IncomeReport, OccupancyReport } from "@/src/types/reports";
+import type { IncomeReport, OccupancyReport, RenewalRateReport } from "@/src/types/reports";
 import {
   fetchIncomeReport,
   fetchOccupancyReport,
+  fetchRenewalRateReport,
   LOAD_INCOME_REPORT_ERROR,
   LOAD_OCCUPANCY_REPORT_ERROR,
+  LOAD_RENEWAL_RATE_REPORT_ERROR,
   NO_CLASSES_MESSAGE,
 } from "./reports-service";
 
@@ -166,5 +168,60 @@ describe("fetchOccupancyReport (FE-28.1)", () => {
     const result = await fetchOccupancyReport("2026-09-01", "2026-11-20");
 
     expect(result).toEqual({ ok: false, error: LOAD_OCCUPANCY_REPORT_ERROR, status: 0 });
+  });
+});
+
+const renewalReport: RenewalRateReport = {
+  from: "2026-09-01",
+  to: "2026-11-30",
+  totals: { expiredCount: 10, renewedCount: 7, renewalRate: 70 },
+  months: [
+    { month: "2026-09", expiredCount: 4, renewedCount: 3, renewalRate: 75 },
+    { month: "2026-10", expiredCount: 0, renewedCount: 0, renewalRate: null },
+    { month: "2026-11", expiredCount: 6, renewedCount: 4, renewalRate: 66.7 },
+  ],
+  message: null,
+};
+
+describe("fetchRenewalRateReport (FE-30.1)", () => {
+  it("consulta GET /reports/renewal-rate con from y to", async () => {
+    const spy = vi.spyOn(apiClient, "apiFetch").mockResolvedValue(json(200, renewalReport));
+
+    const result = await fetchRenewalRateReport("2026-09-01", "2026-11-30");
+
+    expect(spy).toHaveBeenCalledWith("reports/renewal-rate?from=2026-09-01&to=2026-11-30");
+    expect(result).toEqual({ ok: true, data: renewalReport, status: 200 });
+  });
+
+  it("devuelve error 400 del servidor, 403 acceso denegado y genérico en 500/red", async () => {
+    vi.spyOn(apiClient, "apiFetch").mockResolvedValueOnce(
+      json(400, { message: "El rango no puede ser mayor a 12 meses." }),
+    );
+    expect(await fetchRenewalRateReport("2026-01-01", "2027-01-01")).toEqual({
+      ok: false,
+      error: "El rango no puede ser mayor a 12 meses.",
+      status: 400,
+    });
+
+    vi.spyOn(apiClient, "apiFetch").mockResolvedValueOnce(json(403, {}));
+    expect(await fetchRenewalRateReport("2026-09-01", "2026-11-30")).toEqual({
+      ok: false,
+      error: ACCESS_DENIED_MESSAGE,
+      status: 403,
+    });
+
+    vi.spyOn(apiClient, "apiFetch").mockResolvedValueOnce(json(500, {}));
+    expect(await fetchRenewalRateReport("2026-09-01", "2026-11-30")).toEqual({
+      ok: false,
+      error: LOAD_RENEWAL_RATE_REPORT_ERROR,
+      status: 500,
+    });
+
+    vi.spyOn(apiClient, "apiFetch").mockRejectedValueOnce(new Error("offline"));
+    expect(await fetchRenewalRateReport("2026-09-01", "2026-11-30")).toEqual({
+      ok: false,
+      error: LOAD_RENEWAL_RATE_REPORT_ERROR,
+      status: 0,
+    });
   });
 });

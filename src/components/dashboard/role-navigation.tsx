@@ -45,6 +45,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/admin/reportes/ocupacion" className={secondaryLinkClass}>
           📈 Ocupación de las clases
         </Link>
+        <Link href="/admin/reportes/renovaciones" className={secondaryLinkClass}>
+          🔄 Tasa de renovación
+        </Link>
       </>
     );
   }
