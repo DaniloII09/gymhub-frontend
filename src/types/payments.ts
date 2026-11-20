@@ -113,3 +113,30 @@ export type ReceiptPage = {
   page: number;
   pageSize: number;
 };
+
+// --- Pagos pendientes del administrador (H17: BE-17.1) ---
+
+/** Filtros por tipo admitidos en GET /charges/pending. */
+export type PendingChargeFilterType = "MEMBERSHIP" | "PERSONAL_SESSION";
+
+/** Un cobro pendiente de GET /charges/pending. */
+export type PendingChargeItem = {
+  chargeId: number;
+  memberCode: string | null;
+  fullName: string;
+  concept: string;
+  amount: number;
+  /** Fecha solo-día, AAAA-MM-DD, en hora del gimnasio. */
+  dueDate: string;
+  /** Días de atraso calculados y ordenados por el servidor. */
+  daysLate: number;
+};
+
+/** Respuesta paginada de GET /charges/pending (20 por página). */
+export type PendingChargesPage = {
+  data: PendingChargeItem[];
+  totalOwed: number;
+  total: number;
+  page: number;
+  pageSize: number;
+};
