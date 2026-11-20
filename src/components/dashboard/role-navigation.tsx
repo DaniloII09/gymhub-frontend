@@ -70,6 +70,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/miembro/pagos" className={linkClass}>
           💳 Mis pagos
         </Link>
+        <Link href="/miembro/progreso" className={secondaryLinkClass}>
+          📈 Mi progreso
+        </Link>
       </>
     );
   }
