@@ -39,6 +39,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/admin/planes" className={linkClass}>
           💳 Planes
         </Link>
+        <Link href="/admin/cuentas-del-personal" className={linkClass}>
+          👥 Cuentas del Personal
+        </Link>
         <Link href="/admin/pagos-pendientes" className={secondaryLinkClass}>
           ⏳ Pagos pendientes
         </Link>
