@@ -42,6 +42,18 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/admin/cuentas-del-personal" className={linkClass}>
           👥 Cuentas del Personal
         </Link>
+        <Link href="/admin/pagos-pendientes" className={secondaryLinkClass}>
+          ⏳ Pagos pendientes
+        </Link>
+        <Link href="/admin/reportes/ingresos" className={secondaryLinkClass}>
+          📊 Ingresos del periodo
+        </Link>
+        <Link href="/admin/reportes/ocupacion" className={secondaryLinkClass}>
+          📈 Ocupación de las clases
+        </Link>
+        <Link href="/admin/reportes/calificaciones" className={secondaryLinkClass}>
+          ⭐ Promedios de calificación
+        </Link>
       </>
     );
   }
@@ -66,6 +78,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         </Link>
         <Link href="/miembro/pagos" className={linkClass}>
           💳 Mis pagos
+        </Link>
+        <Link href="/miembro/por-calificar" className={secondaryLinkClass}>
+          ⭐ Por calificar
         </Link>
       </>
     );

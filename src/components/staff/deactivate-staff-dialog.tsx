@@ -30,7 +30,7 @@ export function DeactivateStaffDialog({
           </p>
 
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Esta acción no se puede deshacer. El usuario no podrá iniciar sesión con esta cuenta.
+            El usuario no podrá iniciar sesión con esta cuenta.
           </p>
 
           {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}

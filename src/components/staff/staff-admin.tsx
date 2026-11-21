@@ -44,7 +44,6 @@ export function StaffAdmin() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     listStaffAccounts(page, PAGE_SIZE).then((res) => {
       if (cancelled) return;
       if (res.ok) {
@@ -68,6 +67,7 @@ export function StaffAdmin() {
   );
 
   const reload = useCallback(() => {
+    setLoading(true);
     setReloadKey((key) => key + 1);
   }, []);
 
@@ -190,7 +190,10 @@ export function StaffAdmin() {
             <span className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setPage(page - 1)}
+                onClick={() => {
+                  setLoading(true);
+                  setPage(page - 1);
+                }}
                 disabled={page <= 1}
                 aria-label="Página anterior"
                 className="disabled:opacity-40"
@@ -200,7 +203,10 @@ export function StaffAdmin() {
               {page} de {totalPages}
               <button
                 type="button"
-                onClick={() => setPage(page + 1)}
+                onClick={() => {
+                  setLoading(true);
+                  setPage(page + 1);
+                }}
                 disabled={page >= totalPages}
                 aria-label="Página siguiente"
                 className="disabled:opacity-40"

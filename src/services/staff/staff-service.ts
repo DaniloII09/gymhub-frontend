@@ -1,4 +1,5 @@
-import { apiJson } from "@/src/services/http/api-client";
+import { apiJson, apiFetch } from "@/src/services/http/api-client";
+import { readErrorMessage } from "@/src/services/http/error-message";
 import type { StaffAccount, StaffCreatedResponse, StaffPage } from "@/src/types/staff";
 
 export type ServiceResult<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -19,7 +20,7 @@ export async function listStaffAccounts(
       total: number;
     }>(`staff?${params.toString()}`);
     return { ok: true, data: response };
-  } catch (error) {
+  } catch {
     return { ok: false, error: "No se pudo cargar las cuentas del personal." };
   }
 }
@@ -52,15 +53,17 @@ export async function deactivateStaffAccount(
   userId: string,
 ): Promise<ServiceResult<{ id: string; isActive: boolean }>> {
   try {
-    const response = await apiJson<{ id: string; isActive: boolean }>(
-      `users/${userId}/status`,
-      {
-        method: "PATCH",
-        body: JSON.stringify({ isActive: false }),
-      },
-    );
+    const res = await apiFetch(`users/${userId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive: false }),
+    });
+    if (!res.ok) {
+      const errorMessage = await readErrorMessage(res);
+      return { ok: false, error: errorMessage ?? "No se pudo desactivar la cuenta." };
+    }
+    const response = (await res.json()) as { id: string; isActive: boolean };
     return { ok: true, data: response };
-  } catch (error) {
+  } catch {
     return { ok: false, error: "No se pudo desactivar la cuenta." };
   }
 }

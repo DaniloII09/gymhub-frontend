@@ -61,7 +61,7 @@ describe("Staff Form Logic", () => {
       const values = {
         fullName: "Juan Pérez",
         email: "juan@gym.com",
-        role: "INVALID" as any,
+        role: "INVALID" as unknown as typeof EMPTY_STAFF_FORM.role,
       };
       const errors = validateStaffForm(values);
       expect(errors.role).toBeDefined();
