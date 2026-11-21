@@ -48,6 +48,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/admin/reportes/ocupacion" className={secondaryLinkClass}>
           📈 Ocupación de las clases
         </Link>
+        <Link href="/admin/reportes/calificaciones" className={secondaryLinkClass}>
+          ⭐ Promedios de calificación
+        </Link>
       </>
     );
   }
@@ -75,6 +78,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         </Link>
         <Link href="/miembro/rutina" className={secondaryLinkClass}>
           🏋️ Mi rutina
+        </Link>
+        <Link href="/miembro/por-calificar" className={secondaryLinkClass}>
+          ⭐ Por calificar
         </Link>
       </>
     );
