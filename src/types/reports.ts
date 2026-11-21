@@ -77,6 +77,33 @@ export interface OccupancyReport {
   classes: ClassOccupancy[];
 }
 
+/** Promedio por entrenador (clases + sesiones personales) en GET /reports/ratings. */
+export interface TrainerRatingSummary {
+  trainerId: string;
+  trainerName: string;
+  averageRating: number;
+  reviewCount: number;
+}
+
+/** Promedio por nombre de clase en GET /reports/ratings. */
+export interface ClassRatingSummary {
+  className: string;
+  averageRating: number;
+  reviewCount: number;
+}
+
+/** H23 · BE-23.1. Promedios de calificación por entrenador y por clase. */
+export interface RatingsReport {
+  /** YYYY-MM-DD. */
+  from: string;
+  /** YYYY-MM-DD. */
+  to: string;
+  byTrainer: TrainerRatingSummary[];
+  byClassName: ClassRatingSummary[];
+  /** "No hay reseñas en ese rango." si no hay reseñas en todo el rango; si no, null. */
+  message: string | null;
+}
+
 /** Resumen de vencimientos y renovaciones (H30 · GET /reports/renewal-rate). */
 export interface RenewalRateSummary {
   expiredCount: number;

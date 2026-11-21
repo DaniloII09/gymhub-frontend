@@ -48,6 +48,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/admin/reportes/ocupacion" className={secondaryLinkClass}>
           📈 Ocupación de las clases
         </Link>
+        <Link href="/admin/reportes/calificaciones" className={secondaryLinkClass}>
+          ⭐ Promedios de calificación
+        </Link>
         <Link href="/admin/reportes/renovaciones" className={secondaryLinkClass}>
           🔄 Tasa de renovación
         </Link>
@@ -76,12 +79,30 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/miembro/pagos" className={linkClass}>
           💳 Mis pagos
         </Link>
+        <Link href="/miembro/progreso" className={secondaryLinkClass}>
+          📈 Mi progreso
+        </Link>
+        <Link href="/miembro/rutina" className={secondaryLinkClass}>
+          🏋️ Mi rutina
+        </Link>
+        <Link href="/miembro/por-calificar" className={secondaryLinkClass}>
+          ⭐ Por calificar
+        </Link>
       </>
     );
   }
 
   if (role === "TRAINER") {
-    return <Link href="/entrenador/agenda" className={linkClass}>🗓️ Mi agenda de sesiones</Link>;
+    return (
+      <>
+        <Link href="/entrenador/agenda" className={linkClass}>
+          🗓️ Mi agenda de sesiones
+        </Link>
+        <Link href="/entrenador/rutinas" className={secondaryLinkClass}>
+          🏋️ Rutinas
+        </Link>
+      </>
+    );
   }
 
   return null;

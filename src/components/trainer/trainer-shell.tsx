@@ -17,7 +17,7 @@ const NAV: NavItem[] = [
   { label: "Mi jornada", icon: "▦", key: "jornada", href: "/trainer" },
   { label: "Mi agenda", icon: "▤", key: "agenda", href: "/trainer/agenda" },
   { label: "Mis miembros", icon: "◍" },
-  { label: "Planes de entrenamiento", icon: "⚲" },
+  { label: "Rutinas", icon: "⚲", href: "/entrenador/rutinas" },
   { label: "Seguimiento", icon: "↗" },
   { label: "Reseñas", icon: "☆" },
 ];
