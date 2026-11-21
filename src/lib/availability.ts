@@ -58,7 +58,7 @@ export function addDays(date: Date, days: number): Date {
   return d;
 }
 
-/** Bloque que se solapa con la celda [hour:00, hour+1:00) del día `weekday` (1-7). */
+/** Bloque que cubre completamente la celda [hour:00, hour+1:00) del día `weekday` (1-7). */
 export function blockAtCell(
   blocks: AvailabilityBlock[],
   weekday: number,
@@ -69,8 +69,8 @@ export function blockAtCell(
   return blocks.find(
     (b) =>
       b.weekday === weekday &&
-      toMinutes(b.startTime) < cellEnd &&
-      toMinutes(b.endTime) > cellStart,
+      toMinutes(b.startTime) <= cellStart &&
+      toMinutes(b.endTime) >= cellEnd,
   );
 }
 
