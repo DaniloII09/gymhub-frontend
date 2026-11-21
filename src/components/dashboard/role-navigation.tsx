@@ -51,6 +51,9 @@ export function RoleNavigationLinks({ status, role }: RoleNavigationLinksProps) 
         <Link href="/admin/reportes/calificaciones" className={secondaryLinkClass}>
           ⭐ Promedios de calificación
         </Link>
+        <Link href="/admin/reportes/renovaciones" className={secondaryLinkClass}>
+          🔄 Tasa de renovación
+        </Link>
       </>
     );
   }

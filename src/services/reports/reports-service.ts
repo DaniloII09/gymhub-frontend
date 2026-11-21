@@ -1,7 +1,12 @@
 import { ACCESS_DENIED_MESSAGE } from "@/src/components/access-denied";
 import { apiFetch } from "@/src/services/http/api-client";
 import { readErrorMessage } from "@/src/services/http/error-message";
-import type { IncomeReport, OccupancyReport, RatingsReport } from "@/src/types/reports";
+import type {
+  IncomeReport,
+  OccupancyReport,
+  RatingsReport,
+  RenewalRateReport,
+} from "@/src/types/reports";
 import type { ServiceResult } from "@/src/types/service-result";
 
 export const LOAD_INCOME_REPORT_ERROR =
@@ -54,6 +59,21 @@ export async function fetchRatingsReport(
   to: string,
 ): Promise<ServiceResult<RatingsReport>> {
   return fetchAdminReport("reports/ratings", from, to, LOAD_RATINGS_REPORT_ERROR);
+}
+
+export const LOAD_RENEWAL_RATE_REPORT_ERROR =
+  "No pudimos cargar el reporte de tasa de renovación. Intenta de nuevo.";
+export const NO_EXPIRED_MEMBERSHIPS_MESSAGE =
+  "No hay membresías vencidas en ese rango.";
+
+/**
+ * GET /reports/renewal-rate?from=&to= (H30 · BE-30.1, solo Administrador).
+ */
+export async function fetchRenewalRateReport(
+  from: string,
+  to: string,
+): Promise<ServiceResult<RenewalRateReport>> {
+  return fetchAdminReport("reports/renewal-rate", from, to, LOAD_RENEWAL_RATE_REPORT_ERROR);
 }
 
 async function fetchAdminReport<T>(
