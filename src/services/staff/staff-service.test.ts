@@ -100,7 +100,11 @@ describe("Staff Service", () => {
       const userId = "1";
       const mockResponse = { id: userId, isActive: false };
 
-      vi.mocked(apiClient.apiJson).mockResolvedValue(mockResponse);
+      vi.mocked(apiClient.apiFetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue(mockResponse),
+      } as never);
 
       const result = await staffService.deactivateStaffAccount(userId);
 
@@ -111,9 +115,11 @@ describe("Staff Service", () => {
     });
 
     it("retorna error cuando falla la desactivación", async () => {
-      vi.mocked(apiClient.apiJson).mockRejectedValue(
-        new Error("PATCH /users/1/status respondió 500"),
-      );
+      vi.mocked(apiClient.apiFetch).mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: vi.fn().mockResolvedValue({ message: "No puedes desactivar tu propia cuenta." }),
+      } as never);
 
       const result = await staffService.deactivateStaffAccount("1");
 
