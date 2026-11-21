@@ -8,8 +8,8 @@ Aplicación web de GymHub, la plataforma de gestión de gimnasio del Proyecto 2 
 
 | Componente | URL |
 |---|---|
-| Frontend | [https://PENDIENTE.vercel.app] |
-| Documentación de la API (Swagger) | [https://PENDIENTE.onrender.com/api/docs] |
+| Frontend | https://gymhub-frontend-gilt.vercel.app/home |
+| Documentación de la API (Swagger) | https://gymhub-api-6c9o.onrender.com/api/docs |
 
 Los usuarios de prueba se entregan en Moodle, no en este repositorio.
 
