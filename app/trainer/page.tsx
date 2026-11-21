@@ -94,7 +94,13 @@ export default function TrainerHomePage() {
               : `Hoy tienes ${todayClasses.length} ${todayClasses.length === 1 ? "clase" : "clases"}. Haz que cada entrenamiento cuente.`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/entrenador/rutinas"
+            className="flex h-10 items-center rounded-lg border border-tr-line bg-white px-4 text-xs"
+          >
+            🏋️ Rutinas
+          </Link>
           <Link
             href="/entrenador/agenda"
             className="flex h-10 items-center rounded-lg border border-tr-line bg-white px-4 text-xs"
